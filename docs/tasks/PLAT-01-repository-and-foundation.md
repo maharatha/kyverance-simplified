@@ -1,6 +1,6 @@
 # PLAT-01 — Create Kyverance Simplified repository and foundation
 
-> Status: Implemented locally — awaiting remote push / draft PR
+> Status: Complete locally and on `codex/plat-01-foundation` (draft PR pending `main` base)
 
 ## Outcome
 
