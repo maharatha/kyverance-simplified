@@ -1,7 +1,7 @@
 # Kyverance Simplified — Product and Delivery Blueprint
 
-> Status: discovery complete; PLAT-01 foundation scaffold complete locally.  
-> Repository: `kyverance-simplified` (this workspace).  
+> Status: discovery complete; PLAT-01 foundation complete.  
+> Repository: https://github.com/maharatha/kyverance-simplified  
 > Source material: `C:\SourceCode\kyverance\docs` (181 documents reviewed as an indexed corpus; the documents listed in `00-source-synthesis.md` were read in full and are the primary design inputs).
 
 Kyverance Simplified is an AI-native community for simulated portfolios. People create and practise with portfolios, inspect their process, fork public work, collaborate with agents, and sell access to research and portfolio templates. It never sends an order to a brokerage in the initial releases.

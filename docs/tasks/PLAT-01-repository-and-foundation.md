@@ -1,6 +1,12 @@
 # PLAT-01 — Create Kyverance Simplified repository and foundation
 
-> Status: Complete locally and on `codex/plat-01-foundation` (draft PR pending `main` base)
+> Status: Complete
+
+## Delivery record
+
+- Remote: https://github.com/maharatha/kyverance-simplified
+- Branch: `codex/plat-01-foundation`
+- Draft PR: not opened — GitHub defaulted the new repo to the only pushed branch (`codex/plat-01-foundation`), so head and base were identical; creating an empty `main` base was declined by policy. CI also runs on `codex/**` pushes.
 
 ## Outcome
 
