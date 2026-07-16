@@ -1,0 +1,28 @@
+:root {
+  --bg: #0f1419;
+  --fg: #e8eef4;
+  --muted: #9aabbc;
+  --accent: #3d8bfd;
+  --font-display: "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-body: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #1a2a3f 0%, transparent 55%),
+    radial-gradient(900px 500px at 90% 0%, #1b2430 0%, transparent 50%),
+    var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--accent);
+}
