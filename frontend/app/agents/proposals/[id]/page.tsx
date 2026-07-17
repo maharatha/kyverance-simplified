@@ -1,4 +1,4 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { ProposalReviewClient } from "@/components/portfolios/ProposalReviewClient";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -6,10 +6,5 @@ type PageProps = {
 
 export default async function AgentProposalPage({ params }: PageProps) {
   const { id } = await params;
-  return (
-    <RoutePlaceholder
-      title="Review proposal"
-      description={`Proposal “${id}” review UI ships with agent tasks. No trade can be placed from this placeholder.`}
-    />
-  );
+  return <ProposalReviewClient proposalId={id} />;
 }

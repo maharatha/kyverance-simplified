@@ -9,6 +9,7 @@ from kyverance.config import get_settings
 from kyverance.db.session import Base
 
 # Register model metadata for autogenerate / upgrade awareness.
+import kyverance.agents.models  # noqa: F401, E402
 import kyverance.audit.models  # noqa: F401, E402
 import kyverance.connectors.models  # noqa: F401, E402
 import kyverance.identity.models  # noqa: F401, E402

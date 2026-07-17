@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { formatMoney, formatTimestamp } from "@/lib/home/format";
 import { fetchPortfolio, type PortfolioDetail } from "@/lib/portfolios-api";
 import { fetchActivity, fetchPositions, type ActivityItem, type Position } from "@/lib/orders-api";
+import { AgentWorkspacePanel } from "./AgentWorkspacePanel";
 import { OrderLoopPanel } from "./OrderLoopPanel";
 import { VersionPublishPanel } from "./VersionPublishPanel";
 import "./portfolios.css";
@@ -118,6 +119,8 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
             accessToken={accessToken}
             onUpdated={load}
           />
+
+          <AgentWorkspacePanel portfolioId={portfolioId} accessToken={accessToken} />
 
           <OrderLoopPanel
             portfolioId={portfolioId}
