@@ -1,5 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: null, status: "unauthenticated" }),
+  signOut: vi.fn(),
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 import { HomePageClient } from "./HomePageClient";
 
 describe("HomePageClient", () => {
@@ -17,6 +24,7 @@ describe("HomePageClient", () => {
         name: "Build an investing process you can inspect.",
       }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
   });
 
   it("allows fixture state selection outside production", () => {
@@ -28,5 +36,13 @@ describe("HomePageClient", () => {
         name: "Publish the work behind the performance.",
       }),
     ).toBeInTheDocument();
+  });
+
+  it("renders Profile from real session even when fixture is signed-out", () => {
+    vi.stubEnv("NODE_ENV", "test");
+    render(<HomePageClient initialState="signed-out" sessionSignedIn />);
+
+    expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
   });
 });

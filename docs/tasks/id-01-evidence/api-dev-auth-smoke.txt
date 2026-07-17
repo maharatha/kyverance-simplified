@@ -1,0 +1,2 @@
+health={"status":"ok","version":"0.1.0","db":"ok"}
+me={"subject":"dev-user-001","user_id":"31c7ecc5-8e0a-4ccb-85bc-40d14c559b5c","display_name":"Dev User","given_name":"Dev","family_name":"User","idp":"local-development","roles":["member"],"is_dev":true,"is_administrator":false} HTTP 200

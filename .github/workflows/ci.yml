@@ -39,6 +39,7 @@ jobs:
       DATABASE_URL: postgresql+psycopg://kyverance:kyverance@localhost:5432/kyverance_test
       REDIS_URL: redis://localhost:6379/0
       DEV_AUTH: "true"
+      APP_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

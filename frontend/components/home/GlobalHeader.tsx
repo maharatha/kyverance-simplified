@@ -12,9 +12,15 @@ type GlobalHeaderProps = {
   signedIn: boolean;
   menuOpen: boolean;
   onMenuToggle: () => void;
+  onSignOut?: () => void;
 };
 
-export function GlobalHeader({ signedIn, menuOpen, onMenuToggle }: GlobalHeaderProps) {
+export function GlobalHeader({
+  signedIn,
+  menuOpen,
+  onMenuToggle,
+  onSignOut,
+}: GlobalHeaderProps) {
   return (
     <header className="home-header">
       <div className="home-header-inner">
@@ -29,13 +35,35 @@ export function GlobalHeader({ signedIn, menuOpen, onMenuToggle }: GlobalHeaderP
           ))}
         </nav>
         <div className="home-header-actions">
-          <Link
-            href={signedIn ? "/profile" : "/sign-in"}
-            className="btn-secondary"
-            style={{ minHeight: 40, paddingInline: "0.9rem" }}
-          >
-            {signedIn ? "Profile" : "Sign in"}
-          </Link>
+          {signedIn ? (
+            <>
+              <Link
+                href="/profile"
+                className="btn-secondary"
+                style={{ minHeight: 40, paddingInline: "0.9rem" }}
+              >
+                Profile
+              </Link>
+              {onSignOut ? (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ minHeight: 40, paddingInline: "0.9rem" }}
+                  onClick={onSignOut}
+                >
+                  Sign out
+                </button>
+              ) : null}
+            </>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="btn-secondary"
+              style={{ minHeight: 40, paddingInline: "0.9rem" }}
+            >
+              Sign in
+            </Link>
+          )}
           <button
             type="button"
             className="home-menu-toggle"

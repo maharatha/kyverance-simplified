@@ -4,8 +4,12 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from kyverance.api.routes import health
+from kyverance.api.routes import health, me
 from kyverance.config import get_settings
+
+# Ensure identity/audit metadata is registered for Alembic and create_all.
+import kyverance.audit.models  # noqa: F401
+import kyverance.identity.models  # noqa: F401
 
 
 def create_app() -> FastAPI:
@@ -19,6 +23,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(health.router)
+    app.include_router(me.router, prefix="/api/v1")
     return app
 
 

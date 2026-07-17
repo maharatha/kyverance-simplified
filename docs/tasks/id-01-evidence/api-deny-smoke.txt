@@ -1,0 +1,3 @@
+denied_with_client_header={"detail":"Authentication required"} HTTP 401
+
+invalid_bearer={"detail":"Invalid or expired token: Error decoding token headers."} HTTP 401

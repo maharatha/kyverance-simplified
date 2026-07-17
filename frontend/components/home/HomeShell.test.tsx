@@ -18,7 +18,7 @@ describe("HomeShell states", () => {
   });
 
   it("renders signed-out with simulation disclosure and one primary CTA", () => {
-    render(<HomeShell fixture={getHomeFixture("signed-out")} />);
+    render(<HomeShell fixture={getHomeFixture("signed-out")} sessionSignedIn={false} />);
 
     expect(
       screen.getByRole("heading", {
@@ -33,6 +33,12 @@ describe("HomeShell states", () => {
     expect(screen.getByRole("status")).toHaveTextContent(/Simulation only/i);
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
+  });
+
+  it("prefers real session state over fixture for the header", () => {
+    render(<HomeShell fixture={getHomeFixture("signed-out")} sessionSignedIn />);
+    expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
   });
 
   it("renders new-member starter path with a single primary CTA", () => {

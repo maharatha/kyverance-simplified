@@ -10,17 +10,23 @@ import { PortfolioSnapshotCard } from "./PortfolioSnapshotCard";
 
 type HomeShellProps = {
   fixture: HomeFixture;
+  /** Real session state for header; fixture state still drives Home content. */
+  sessionSignedIn?: boolean;
   menuOpen?: boolean;
   onMenuToggle?: () => void;
+  onSignOut?: () => void;
 };
 
 export function HomeShell({
   fixture,
+  sessionSignedIn,
   menuOpen = false,
   onMenuToggle,
+  onSignOut,
 }: HomeShellProps) {
-  const signedIn = fixture.state !== "signed-out";
-  const centered = fixture.state === "signed-out";
+  const fixtureSignedIn = fixture.state !== "signed-out";
+  const signedIn = sessionSignedIn ?? fixtureSignedIn;
+  const centered = fixture.state === "signed-out" && !signedIn;
   const showRail =
     Boolean(fixture.agent) ||
     Boolean(fixture.creator) ||
@@ -33,6 +39,7 @@ export function HomeShell({
         signedIn={signedIn}
         menuOpen={menuOpen}
         onMenuToggle={onMenuToggle ?? (() => undefined)}
+        onSignOut={signedIn ? onSignOut : undefined}
       />
       <main className="home-main">
         <div

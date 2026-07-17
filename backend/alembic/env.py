@@ -8,6 +8,10 @@ from sqlalchemy import engine_from_config, pool
 from kyverance.config import get_settings
 from kyverance.db.session import Base
 
+# Register model metadata for autogenerate / upgrade awareness.
+import kyverance.audit.models  # noqa: F401, E402
+import kyverance.identity.models  # noqa: F401, E402
+
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

@@ -1,0 +1,4 @@
+*.log
+*.pid
+*.out.log
+*.err.log
