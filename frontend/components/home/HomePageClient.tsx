@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 import {
@@ -59,6 +60,9 @@ export function HomePageClient({ initialState, sessionSignedIn }: HomePageClient
                 </option>
               ))}
             </select>
+            <Link href="/delivery-status" className="home-dev-delivery-link">
+              Delivery board
+            </Link>
           </div>
         </div>
       ) : null}

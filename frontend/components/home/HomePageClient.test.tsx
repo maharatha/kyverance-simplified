@@ -19,12 +19,24 @@ describe("HomePageClient", () => {
     render(<HomePageClient initialState="active-member" />);
 
     expect(screen.queryByLabelText("Dev home state")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Delivery board" })).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         name: "Build an investing process you can inspect.",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
+  });
+
+  it("links to the local delivery board from the developer header", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    render(<HomePageClient initialState="signed-out" />);
+
+    expect(screen.getByLabelText("Dev home state")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Delivery board" })).toHaveAttribute(
+      "href",
+      "/delivery-status",
+    );
   });
 
   it("allows fixture state selection outside production", () => {

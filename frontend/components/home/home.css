@@ -483,6 +483,25 @@
   padding: 0.35rem 0.55rem;
 }
 
+.home-dev-delivery-link {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.7rem;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-dev-delivery-link:hover,
+.home-dev-delivery-link:focus-visible {
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+
 @media (min-width: 768px) {
   .home-menu-toggle {
     display: none;
