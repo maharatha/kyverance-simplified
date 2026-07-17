@@ -18,6 +18,14 @@ const env = {
   NEXT_PRIVATE_WORKER_THREADS: "false",
 };
 
+function removeNextDir() {
+  if (!fs.existsSync(nextDir)) {
+    return;
+  }
+  // Windows can leave locked/partial trees after a failed standalone copy.
+  fs.rmSync(nextDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 200 });
+}
+
 function runBuild() {
   return spawnSync("npx", ["next", "build"], {
     cwd: frontendRoot,
@@ -30,9 +38,7 @@ function runBuild() {
 const maxAttempts = 3;
 let lastStatus = 1;
 for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-  if (fs.existsSync(nextDir)) {
-    fs.rmSync(nextDir, { recursive: true, force: true });
-  }
+  removeNextDir();
   console.log(`\n[next-build] attempt ${attempt}/${maxAttempts}`);
   const result = runBuild();
   lastStatus = result.status ?? 1;

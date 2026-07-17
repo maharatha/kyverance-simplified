@@ -1,6 +1,6 @@
 # WEB-01 — Build the Home page shell
 
-> Status: Draft — do not hand to Cursor until FND-01 is approved and the new repository exists.
+> Status: Implemented — awaiting Codex review.
 
 ## Outcome
 

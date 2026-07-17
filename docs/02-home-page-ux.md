@@ -1,6 +1,6 @@
 # FND-01 — Home Page Information Architecture and UX Specification
 
-> Status: Draft for review.  
+> Status: Approved for implementation by Codex.  
 > Parent: [Product foundation](01-product-foundation.md).  
 > Source inputs: original Kyverance Home/Portfolio read-model, UX, AI-guardrail, portfolio-network UX, and Entra-branding documents listed in [source synthesis](00-source-synthesis.md).
 
