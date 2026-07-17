@@ -38,7 +38,7 @@ describe("delivery status serialization", () => {
       ],
       cursorProcessCount: 2,
       preview: {
-        url: "http://127.0.0.1:3000/",
+        url: "http://127.0.0.1:3001/",
         healthy: true,
         statusCode: 200,
       },
@@ -48,7 +48,9 @@ describe("delivery status serialization", () => {
     expect(status.branch).toBe("codex/ops-01-local-delivery-board");
     expect(status.cursorCli).toEqual({ active: true, processCount: 2 });
     expect(formatDirtySummary(status.dirtyFiles)).toBe("1 dirty file");
-    expect(formatCursorSummary(status)).toBe("2 active Cursor CLI processes");
+    expect(formatCursorSummary(status)).toBe(
+      "2 Cursor Agent Node processes present (not proof of active editing)",
+    );
     expect(formatPreviewSummary(status)).toBe("Healthy (HTTP 200)");
     expect(assertNoAbsolutePaths(status)).toEqual([]);
   });
@@ -69,11 +71,11 @@ describe("delivery status serialization", () => {
       dirtyFiles: ["C:\\SourceCode\\secret.ts"],
       recentFiles: [{ path: "/tmp/leak.ts", modifiedAt: "2026-07-17T16:00:00.000Z" }],
       cursorProcessCount: 0,
-      preview: { url: "http://127.0.0.1:3000/", healthy: false, statusCode: null },
+      preview: { url: "http://127.0.0.1:3001/", healthy: false, statusCode: null },
     });
 
     expect(assertNoAbsolutePaths(status).length).toBeGreaterThan(0);
-    expect(formatCursorSummary(status)).toBe("No active Cursor CLI process");
+    expect(formatCursorSummary(status)).toBe("No Cursor Agent Node processes present");
     expect(formatPreviewSummary(status)).toBe("Unavailable");
     expect(formatDirtySummary(status.dirtyFiles)).toBe("1 dirty file");
   });

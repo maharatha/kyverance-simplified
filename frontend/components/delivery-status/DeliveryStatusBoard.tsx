@@ -95,7 +95,7 @@ export function DeliveryStatusBoard({
         </section>
 
         <section aria-labelledby="delivery-cursor">
-          <h2 id="delivery-cursor">Cursor CLI</h2>
+          <h2 id="delivery-cursor">Cursor Agent process presence</h2>
           <p
             className="delivery-status-value"
             data-active={status.cursorCli.active ? "true" : "false"}

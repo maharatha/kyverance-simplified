@@ -14,7 +14,52 @@ import type { DeliveryCommit, DeliveryRecentFile, DeliveryStatus } from "./types
 const execFileAsync = promisify(execFile);
 
 const RECENT_SCAN_ROOTS = ["frontend", "backend", "docs", "scripts"] as const;
-const PREVIEW_URL = "http://127.0.0.1:3000/";
+
+/** Documented local Next.js preview for this workspace. */
+export const DEFAULT_DELIVERY_PREVIEW_URL = "http://127.0.0.1:3001/";
+
+/**
+ * Narrow override for the local preview health probe.
+ * Example: DELIVERY_STATUS_PREVIEW_URL=http://127.0.0.1:3000/
+ */
+export const DELIVERY_STATUS_PREVIEW_URL_ENV = "DELIVERY_STATUS_PREVIEW_URL";
+
+export function resolveDeliveryPreviewUrl(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const override = env[DELIVERY_STATUS_PREVIEW_URL_ENV]?.trim();
+  if (override) {
+    return override.endsWith("/") ? override : `${override}/`;
+  }
+  return DEFAULT_DELIVERY_PREVIEW_URL;
+}
+
+/**
+ * True only for Cursor Agent Node CLI / worker processes.
+ * PowerShell/cmd launcher wrappers that merely mention cursor-agent are excluded.
+ */
+export function isCursorAgentNodeProcess(
+  processName: string | null | undefined,
+  commandLine: string | null | undefined,
+): boolean {
+  if (!commandLine || !/cursor-agent/i.test(commandLine)) return false;
+  if (/grep\b/i.test(commandLine)) return false;
+
+  const name = (processName || "").toLowerCase();
+  if (name === "node.exe" || name === "node") return true;
+  if (name && name !== "node.exe" && name !== "node") return false;
+
+  // Unix `ps` often has no separate Name column — require a node binary in args.
+  return /(?:^|[\s"/\\])node(?:\.exe)?(?:\s|"|$)/i.test(commandLine);
+}
+
+export function countCursorAgentNodeProcesses(
+  processes: Array<{ name?: string | null; commandLine?: string | null }>,
+): number {
+  return processes.filter((proc) =>
+    isCursorAgentNodeProcess(proc.name, proc.commandLine),
+  ).length;
+}
 
 function toRepoRelative(repoRoot: string, absolutePath: string): string {
   return path.relative(repoRoot, absolutePath).split(path.sep).join("/");
@@ -144,28 +189,49 @@ async function collectRecentFiles(
 async function countCursorCliProcesses(): Promise<number> {
   if (process.platform === "win32") {
     try {
+      // Emit Name<TAB>CommandLine so wrappers can be filtered in JS.
       const script =
-        "@(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'cursor-agent' }).Count";
+        "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'cursor-agent' } | ForEach-Object { $_.Name + [char]9 + $_.CommandLine }";
       const { stdout } = await execFileAsync(
         "powershell",
         ["-NoProfile", "-NonInteractive", "-Command", script],
         { windowsHide: true, maxBuffer: 1024 * 1024 },
       );
-      const count = Number.parseInt(stdout.toString().trim(), 10);
-      return Number.isFinite(count) ? Math.max(0, count) : 0;
+      const processes = stdout
+        .toString()
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const sep = line.indexOf("\t");
+          if (sep <= 0) return { name: null, commandLine: line };
+          return {
+            name: line.slice(0, sep),
+            commandLine: line.slice(sep + 1),
+          };
+        });
+      return countCursorAgentNodeProcesses(processes);
     } catch {
       return 0;
     }
   }
 
   try {
-    const { stdout } = await execFileAsync("ps", ["-A", "-o", "args="], {
+    const { stdout } = await execFileAsync("ps", ["-A", "-o", "comm=,args="], {
       maxBuffer: 2 * 1024 * 1024,
     });
-    return stdout
+    const processes = stdout
       .toString()
       .split("\n")
-      .filter((line) => /cursor-agent/.test(line) && !/grep/.test(line)).length;
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const parts = line.split(/\s+/);
+        const name = parts[0] || null;
+        const commandLine = parts.slice(1).join(" ") || line;
+        return { name, commandLine };
+      });
+    return countCursorAgentNodeProcesses(processes);
   } catch {
     return 0;
   }
@@ -179,7 +245,7 @@ function previewPort(url: string): { host: string; port: number } {
       port: Number(parsed.port || (parsed.protocol === "https:" ? 443 : 80)),
     };
   } catch {
-    return { host: "127.0.0.1", port: 3000 };
+    return { host: "127.0.0.1", port: 3001 };
   }
 }
 
@@ -197,7 +263,7 @@ function canTcpConnect(host: string, port: number, timeoutMs = 1000): Promise<bo
   });
 }
 
-async function probePreview(url: string = PREVIEW_URL): Promise<{
+async function probePreview(url: string = resolveDeliveryPreviewUrl()): Promise<{
   url: string;
   healthy: boolean;
   statusCode: number | null;

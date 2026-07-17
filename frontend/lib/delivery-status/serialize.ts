@@ -62,11 +62,16 @@ export function formatDirtySummary(dirtyFiles: string[]): string {
 
 export function formatCursorSummary(status: DeliveryStatus): string {
   if (!status.available) return "Unavailable";
-  if (!status.cursorCli.active) return "No active Cursor CLI process";
+  if (!status.cursorCli.active) {
+    return "No Cursor Agent Node processes present";
+  }
   const count = status.cursorCli.processCount;
-  return count === 1
-    ? "1 active Cursor CLI process"
-    : `${count} active Cursor CLI processes`;
+  const presence =
+    count === 1
+      ? "1 Cursor Agent Node process present"
+      : `${count} Cursor Agent Node processes present`;
+  // Presence of Node CLI/worker processes is not proof the agent is editing.
+  return `${presence} (not proof of active editing)`;
 }
 
 export function formatPreviewSummary(status: DeliveryStatus): string {

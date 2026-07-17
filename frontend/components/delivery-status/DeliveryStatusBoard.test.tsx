@@ -23,7 +23,7 @@ const availableStatus: DeliveryStatus = {
   ],
   cursorCli: { active: true, processCount: 1 },
   preview: {
-    url: "http://127.0.0.1:3000/",
+    url: "http://127.0.0.1:3001/",
     healthy: true,
     statusCode: 200,
   },
@@ -43,7 +43,10 @@ describe("DeliveryStatusBoard", () => {
       screen.getByRole("heading", { name: "Local delivery board" }),
     ).toBeInTheDocument();
     expect(screen.getByText("codex/ops-01-local-delivery-board")).toBeInTheDocument();
-    expect(screen.getByText("1 active Cursor CLI process")).toBeInTheDocument();
+    expect(
+      screen.getByText("1 Cursor Agent Node process present (not proof of active editing)"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("http://127.0.0.1:3001/")).toBeInTheDocument();
     expect(screen.getByText("Healthy (HTTP 200)")).toBeInTheDocument();
     expect(screen.getByText("1 dirty file")).toBeInTheDocument();
     expect(screen.getByText("Add local delivery board")).toBeInTheDocument();
