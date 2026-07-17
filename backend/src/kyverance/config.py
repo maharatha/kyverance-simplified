@@ -43,6 +43,23 @@ class Settings(BaseSettings):
     # Quote source for simulation. Fixture mode is the only supported mode in SIM-02.
     quote_mode: str = "fixture"
 
+    # Market-data warehouse / jobs (MRKT-01). Fake provider is the local/CI default.
+    market_data_provider: str = "fake"
+    market_data_engine_enabled: bool = True
+    market_data_jobs_enabled: bool = True
+    market_data_live_api_token: str = ""
+    market_data_default_availability_delay_minutes: int = 90
+    market_data_correction_delay_minutes: int = 240
+    market_data_us_primary_exchange: str = "XNAS"
+    market_data_instrument_sync_limit: int = 0
+    market_data_completeness_threshold_percent: float = 85.0
+    market_data_max_unmapped_errors: int = 200
+    market_data_stale_tolerance_minutes: int = 1440
+    market_data_max_history_days: int = 1825
+    market_data_worker_mode: str = "once"
+    market_data_worker_max_jobs: int = 50
+    market_data_job_lock_seconds: int = 1800
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

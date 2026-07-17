@@ -52,5 +52,32 @@ def ready(
         redis_status = f"error: {exc.__class__.__name__}"
     checks["redis"] = redis_status
 
+    checks["market_data_engine"] = "enabled" if settings.market_data_engine_enabled else "disabled"
+    checks["market_data_jobs"] = "enabled" if settings.market_data_jobs_enabled else "disabled"
+    checks["market_data_ingest_provider"] = settings.market_data_provider
+    try:
+        from kyverance.market_data.models import IngestionRun, LatestDailyPrice, MarketDataHealth
+
+        latest_n = db.query(LatestDailyPrice).count()
+        checks["market_data_latest_rows"] = latest_n
+        last_pub = (
+            db.query(IngestionRun)
+            .filter(IngestionRun.status == "PUBLISHED")
+            .order_by(IngestionRun.completed_at.desc())
+            .first()
+        )
+        if last_pub and last_pub.completed_at:
+            checks["market_data_last_publish"] = last_pub.completed_at.isoformat()
+            checks["market_data_ingestion"] = "ok"
+        else:
+            checks["market_data_ingestion"] = "empty"
+        for component in ("scheduler", "worker", "ingest"):
+            health = db.get(MarketDataHealth, component)
+            if health and health.last_success_at:
+                checks[f"market_data_{component}_last_success"] = health.last_success_at.isoformat()
+    except Exception as exc:  # noqa: BLE001
+        checks["market_data_ingestion"] = f"error:{exc.__class__.__name__}"
+
+    # Provider/AI outages must not fail readiness when Postgres is healthy.
     ok = checks.get("database") == "ok"
     return {"status": "ok" if ok else "degraded", "checks": checks}

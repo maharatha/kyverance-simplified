@@ -13,6 +13,7 @@ import kyverance.agents.models  # noqa: F401, E402
 import kyverance.audit.models  # noqa: F401, E402
 import kyverance.connectors.models  # noqa: F401, E402
 import kyverance.identity.models  # noqa: F401, E402
+import kyverance.market_data.models  # noqa: F401, E402
 import kyverance.portfolios.models  # noqa: F401, E402
 import kyverance.simulation.models  # noqa: F401, E402
 

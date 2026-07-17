@@ -33,6 +33,9 @@ dev = [
 [project.scripts]
 kyverance-api = "kyverance.main:run"
 kyverance-migrate = "kyverance.db.migrate_cli:main"
+kyverance-market-scheduler = "kyverance.market_data.cli:scheduler_main"
+kyverance-market-worker = "kyverance.market_data.cli:worker_main"
+kyverance-market-admin = "kyverance.market_data.cli:admin_main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
