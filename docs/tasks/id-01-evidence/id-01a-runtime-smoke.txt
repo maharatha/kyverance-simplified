@@ -1,0 +1,50 @@
+ID-01A local smoke (no AUTH_SECRET, no Entra, no AUTH_DEV_IDENTITY)
+Server: next dev 127.0.0.1:3004
+Date: 2026-07-16T19:55:29.0467918-05:00
+
+GET / -> 200
+GET /sign-in -> 200
+GET /api/auth/session -> 200 body=null
+GET /profile -> 307 Location=http://localhost:3004/sign-in?callbackUrl=%2Fprofile
+
+Server log (tail):
+---
+pid: 47432
+cwd: "C:\\SourceCode\\kyverance-simplified\\frontend"
+command: "Remove-Item Env:AUTH_SECRET -ErrorAction SilentlyContinue; Remove-Item Env:AUTH_DEV_IDENTITY -ErrorAction SilentlyContinue; Remove-Item Env:AUTH_ENTRA_CLIENT_ID -ErrorAction SilentlyContinue; Remove-Item Env:AUTH_ENTRA_CLIENT_SECRET -ErrorAction SilentlyContinue; Remove-Item Env:AUTH_ENTRA_ISSUER -ErrorAction SilentlyContinue; npm run dev -- --hostname 127.0.0.1 --port 3004"
+started_at: 2026-07-17T00:55:13.166Z
+running_for_ms: 15029    
+---
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> kyverance-web@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3004
+
+   ▲ Next.js 15.5.20
+   - Local:        http://127.0.0.1:3004
+   - Network:      http://127.0.0.1:3004
+   - Experiments (use with caution):
+     · cpus: 1
+
+ ✓ Starting...
+ ✓ Ready in 1535ms
+ ✓ Compiled /middleware in 333ms (116 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 2.3s (680 modules)
+ GET / 200 in 2582ms
+ ○ Compiling /sign-in ...
+ ✓ Compiled /sign-in in 1311ms (790 modules)
+ GET /sign-in 200 in 1560ms
+ ✓ Compiled /api/auth/[...nextauth] in 151ms (798 modules)
+ GET /api/auth/session 200 in 758ms
+
+Notes:
+- Diagnosis: Auth.js MissingSecret when middleware imported NextAuth and AUTH_SECRET was unset; /api/auth/session returned 500.
+- Fix: Edge cookie gate (no next-auth/jose) + non-production AUTH_SECRET fallback + Node-only jwt/session callbacks in auth.ts.
+- Production remains fail-closed without AUTH_SECRET (resolveAuthSecret returns undefined).
+- Production build middleware is 34.1 kB with no Edge Runtime jose warning.
+
+Production start (AUTH_SECRET set, no Entra):
+GET / -> 200
+GET /sign-in -> 200
+GET /api/auth/session -> 200

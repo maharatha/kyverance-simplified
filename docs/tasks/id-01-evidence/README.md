@@ -2,7 +2,39 @@
 
 Branch: `codex/id-01-entra-rbac`
 
-## Commands and results
+## ID-01A Auth.js runtime hardening
+
+### Diagnosis
+
+With no `.env.local` / Entra credentials, Edge middleware imported `next-auth` and Auth.js threw `MissingSecret`. `GET /api/auth/session` returned **500**, breaking the signed-out shell.
+
+### Fix summary
+
+- Edge middleware: cookie presence gate only (`lib/auth-routes.ts`) — no Auth.js/Jose import
+- Node `auth.ts`: providers + jwt/session callbacks + `resolveAuthSecret()`
+- Non-production local secret fallback; production remains fail-closed without `AUTH_SECRET`
+
+### Commands and results
+
+```text
+npm test          → 7 files / 31 tests passed
+npm run lint      → No ESLint warnings or errors
+npm run build:clean → compiled successfully; Middleware 34.1 kB; no Edge jose warning
+backend pytest    → 10 passed, 2 skipped
+```
+
+### Unsigned smoke (no AUTH_SECRET / Entra / AUTH_DEV_IDENTITY)
+
+Artifact: `id-01a-runtime-smoke.txt`
+
+- `GET /` → **200**
+- `GET /sign-in` → **200**
+- `GET /api/auth/session` → **200** `null`
+- `GET /profile` → **307** `/sign-in?callbackUrl=%2Fprofile`
+
+HTML: `id-01a-home-unsigned.html`, `id-01a-sign-in-unsigned.html`
+
+## Commands and results (ID-01)
 
 ### Backend tests
 
@@ -17,8 +49,8 @@ Result: **10 passed, 2 skipped**
 
 ```text
 npm run lint   → No ESLint warnings or errors
-npm test       → 6 files / 24 tests passed
-npm run build:clean → compiled successfully (Auth.js Edge Runtime jose warnings only)
+npm test       → 7 files / 31 tests passed (after ID-01A)
+npm run build:clean → compiled successfully; Middleware 34.1 kB (no Edge jose warning after ID-01A)
 ```
 
 ### Migrations (local Postgres)

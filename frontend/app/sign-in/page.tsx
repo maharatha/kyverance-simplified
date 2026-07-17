@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { SignInPanel } from "@/components/auth/SignInPanel";
-import { isEntraConfigured, isLocalDevIdentityEnabled } from "@/auth.config";
+import { isEntraConfigured, isLocalDevIdentityEnabled } from "@/lib/auth-env";
 import { PRODUCT_NAME } from "@/lib/product";
 import Link from "next/link";
 import { redirect } from "next/navigation";
