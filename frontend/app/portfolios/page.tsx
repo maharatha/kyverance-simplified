@@ -1,10 +1,5 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { PortfoliosWorkspace } from "@/components/portfolios/PortfoliosWorkspace";
 
 export default function PortfoliosPage() {
-  return (
-    <RoutePlaceholder
-      title="Portfolios"
-      description="Your simulated portfolios will be listed here in a later task."
-    />
-  );
+  return <PortfoliosWorkspace />;
 }

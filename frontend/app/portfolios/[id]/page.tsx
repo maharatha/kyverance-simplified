@@ -1,4 +1,4 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { PortfolioDetailClient } from "@/components/portfolios/PortfolioDetailClient";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -6,10 +6,5 @@ type PageProps = {
 
 export default async function PortfolioDetailPage({ params }: PageProps) {
   const { id } = await params;
-  return (
-    <RoutePlaceholder
-      title="Portfolio workspace"
-      description={`Portfolio “${id}” detail will open here. Home links remain safe placeholders until SIM tasks land.`}
-    />
-  );
+  return <PortfolioDetailClient portfolioId={id} />;
 }

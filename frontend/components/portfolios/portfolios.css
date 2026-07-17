@@ -1,0 +1,131 @@
+.portfolio-page {
+  min-height: 100vh;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3rem clamp(1rem, 3vw, 2rem) 4rem;
+}
+
+.portfolio-eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.portfolio-title {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  letter-spacing: -0.03em;
+}
+
+.portfolio-lede {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.portfolio-status,
+.portfolio-meta,
+.portfolio-notice,
+.portfolio-empty {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.portfolio-error {
+  margin-top: 1rem;
+  color: var(--loss);
+}
+
+.portfolio-panel {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.portfolio-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.portfolio-label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.portfolio-input,
+.portfolio-textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  font: inherit;
+}
+
+.portfolio-textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.portfolio-list {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.portfolio-item {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.portfolio-item-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.portfolio-item-header a {
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 650;
+}
+
+.portfolio-item-header a:hover {
+  color: var(--accent);
+}
+
+.portfolio-balance {
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+
+.portfolio-ledger {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.portfolio-ledger-row {
+  display: grid;
+  gap: 0.2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.portfolio-back {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: var(--muted);
+}
