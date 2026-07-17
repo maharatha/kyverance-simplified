@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useState } from "react";
 import {
+  PUBLISH_DISCLOSURE,
   createPortfolioVersion,
   fetchPortfolioVersions,
   patchPortfolio,
@@ -38,6 +39,7 @@ export function VersionPublishPanel({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [disclosure, setDisclosure] = useState(false);
   const [visibility, setVisibility] = useState("public");
   const [license, setLicense] = useState("public_fork_allowed");
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
@@ -107,6 +109,10 @@ export function VersionPublishPanel({
       setError("Explicit publish consent is required");
       return;
     }
+    if (!disclosure) {
+      setError("Disclosure acknowledgement is required");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -123,6 +129,7 @@ export function VersionPublishPanel({
         { accessToken },
       );
       setConsent(false);
+      setDisclosure(false);
       await loadVersions();
       onUpdated();
     } catch (err) {
@@ -234,6 +241,9 @@ export function VersionPublishPanel({
             <option value="view_only">view_only</option>
           </select>
         </label>
+        <p className="portfolio-notice" role="note">
+          {PUBLISH_DISCLOSURE}
+        </p>
         <label className="portfolio-check">
           <input
             type="checkbox"
@@ -244,7 +254,20 @@ export function VersionPublishPanel({
           I consent to publish this simulated version with the selected visibility, provenance, and
           license. No Plaid data is included.
         </label>
-        <button type="submit" className="btn-primary" disabled={busy || !selectedVersionId}>
+        <label className="portfolio-check">
+          <input
+            type="checkbox"
+            checked={disclosure}
+            onChange={(e) => setDisclosure(e.target.checked)}
+            disabled={busy}
+          />
+          I acknowledge the simulated-portfolio disclosure above.
+        </label>
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={busy || !selectedVersionId || !consent || !disclosure}
+        >
           Publish selected version
         </button>
       </form>

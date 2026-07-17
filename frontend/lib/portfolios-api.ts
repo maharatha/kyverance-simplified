@@ -224,6 +224,11 @@ export async function createPortfolioVersion(
   return parseJson<PortfolioVersion>(response);
 }
 
+export const PUBLISH_DISCLOSURE =
+  "This published version is a simulated portfolio snapshot. " +
+  "It is not broker-verified, not investment advice, and does not grant " +
+  "access to the publisher's private Plaid data or future trades.";
+
 export async function publishPortfolioVersion(
   portfolioId: string,
   versionId: string,
@@ -232,7 +237,7 @@ export async function publishPortfolioVersion(
     license: string;
     provenance?: string;
     consent_acknowledged: boolean;
-    disclosure_acknowledged?: boolean;
+    disclosure_acknowledged: boolean;
   },
   options?: PortfolioRequestOptions,
 ): Promise<PortfolioVersion> {
@@ -247,7 +252,7 @@ export async function publishPortfolioVersion(
         license: input.license,
         provenance: input.provenance ?? "simulated",
         consent_acknowledged: input.consent_acknowledged,
-        disclosure_acknowledged: input.disclosure_acknowledged ?? true,
+        disclosure_acknowledged: input.disclosure_acknowledged,
       }),
     },
   );

@@ -25,6 +25,10 @@ const publishPortfolioVersion = vi.fn();
 const patchPortfolio = vi.fn();
 
 vi.mock("@/lib/portfolios-api", () => ({
+  PUBLISH_DISCLOSURE:
+    "This published version is a simulated portfolio snapshot. " +
+    "It is not broker-verified, not investment advice, and does not grant " +
+    "access to the publisher's private Plaid data or future trades.",
   fetchPortfolio: (...args: unknown[]) => fetchPortfolio(...args),
   fetchPortfolioVersions: (...args: unknown[]) => fetchPortfolioVersions(...args),
   createPortfolioVersion: (...args: unknown[]) => createPortfolioVersion(...args),

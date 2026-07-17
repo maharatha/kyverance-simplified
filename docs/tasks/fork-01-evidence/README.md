@@ -4,7 +4,7 @@ Branch: `codex/fork-01-versioned-portfolios`
 
 ## Scope confirmation
 
-Implemented immutable portfolio versions (metadata/thesis/holdings/agent-config ref/data context/checksum), publish with explicit consent/visibility/provenance/license, and independent forks with durable lineage + isolated wallet/positions. No automatic sync, mirrored trades, discovery feeds, marketplace/payments, Plaid exposure, real trading, or original Kyverance edits.
+Implemented immutable portfolio versions (metadata/thesis/holdings/agent-config ref/data context/checksum), publish with explicit consent/visibility/provenance/disclosure, and independent forks with durable lineage + isolated wallet/positions. No automatic sync, mirrored trades, discovery feeds, marketplace/payments, Plaid exposure, real trading, or original Kyverance edits.
 
 ## Commands and results
 
@@ -21,16 +21,17 @@ Result: **39 passed, 2 skipped**
 ```text
 npm test          → 14 files / 48 tests passed
 npm run lint      → No ESLint warnings or errors
-npm run build:clean → compiled successfully; /portfolios/[id] 4.98 kB
+npm run build:clean → compiled successfully
 ```
 
 ## Behavior covered
 
 - Version snapshot freezes thesis/holdings/checksum; live portfolio edits do not mutate prior versions
-- Publish requires creator role + explicit consent; published policy cannot be rewritten in place
+- Publish requires creator role + explicit consent + disclosure acknowledgement; published policy cannot be rewritten in place
 - Fork from `public` + `public_fork_allowed` creates private portfolio with independent wallet/positions and lineage (`sync_enabled=false`, `mirror_trades=false`)
+- Source trades after fork do not change fork cash or position quantities
 - Private/draft foreign versions return 404; view_only public versions deny fork (403)
-- UI: thesis/version/publish panel on portfolio detail; fork-by-version-id on portfolios list
+- UI: thesis/version/publish panel on portfolio detail (consent + disclosure checkboxes); fork-by-version-id on portfolios list
 
 ## Migration / rollout
 

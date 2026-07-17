@@ -2,8 +2,14 @@ $ErrorActionPreference = 'Stop'
 
 $cursorCommand = Join-Path $env:LOCALAPPDATA 'cursor-agent\cursor-agent.cmd'
 $workspace = 'C:\SourceCode\kyverance-simplified'
+$evidenceDir = Join-Path $workspace 'docs\tasks\fork-01-evidence'
+New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+$evidenceLog = Join-Path $evidenceDir 'cursor-fork01-fresh-session.jsonl'
+
 $taskPrompt = @'
 Implement only FORK-01 at C:\SourceCode\kyverance-simplified\docs\tasks\FORK-01-versioned-portfolios.md.
+
+START FRESH: This is a new session. Do not resume prior Cursor sessions. Inspect current git/code state first before changing anything. Prior FORK-01 commits/sessions are not proof of correctness — re-verify against the authoritative docs below. Keep good code that already meets acceptance after re-verification; fix or reimplement gaps. Do not expand scope.
 
 Read first (authoritative for Simplified product):
 - docs/tasks/FORK-01-versioned-portfolios.md
@@ -26,7 +32,7 @@ Outcome:
 - Fork from exactly one permitted public version into a new owner-controlled simulated portfolio with durable source lineage (source portfolio/version, license/entitlement, timestamp) and independent wallet/positions
 - No automatic sync, mirrored trades, public sharing by default, creator payment, Plaid exposure, or real trading
 - API + minimal UI + tests + Alembic migrations
-- After checks pass: commit and push on focused branch `codex/fork-01-versioned-portfolios` (branch from current SIM-02 tip)
+- After checks pass: commit and push on focused branch `codex/fork-01-versioned-portfolios` (based on SIM-02 tip). Prefer additive commits; do not force-push unless the branch history is broken and you explain why.
 
 Product distinction (critical):
 - Original portfolio-network "read-only clone" has no holdings/orders — Simplified FORK-01 fork is an independent simulated portfolio that diverges after creation
@@ -36,16 +42,19 @@ Constraints:
 - Keep scope exact to FORK-01 only
 - No external infrastructure, Azure/Entra/DNS/secrets changes, original Kyverance code edits, real trading, Plaid into public/fork surfaces, payments, or scope expansion
 - Preserve repository conventions (decimal strings, object auth, Idempotency-Key, append-only source records, private-by-default)
+- Do not hand off to another agent; implement in this session
 
 Verification:
 - Backend unit/API tests for version immutability, publish consent, fork lineage, independent wallet, authz denials
 - Frontend tests for version/publish/fork UX surfaces added
 - Run the same backend/frontend test and production build gates used by prior SIM tasks
-- Leave brief evidence under docs/tasks/fork-01-evidence/ if useful
+- Update brief evidence under docs/tasks/fork-01-evidence/
 
 Final report must include: changed files, checks/results, migration/rollout impact, risks, branch/commit, and push status.
 '@
 
-Write-Host 'Starting Cursor FORK-01 versioned-portfolios session...' -ForegroundColor Cyan
-& $cursorCommand -p --trust --auto-review --stream-partial-output --output-format stream-json --workspace $workspace $taskPrompt
+Write-Host 'Starting fresh Cursor FORK-01 versioned-portfolios session...' -ForegroundColor Cyan
+& $cursorCommand -p --trust --auto-review --stream-partial-output --output-format stream-json --workspace $workspace $taskPrompt 2>&1 |
+    Tee-Object -FilePath $evidenceLog
 Write-Host 'Cursor session ended. Codex will review the final report and verification.' -ForegroundColor Yellow
+Write-Host ("Evidence log: {0}" -f $evidenceLog) -ForegroundColor DarkGray

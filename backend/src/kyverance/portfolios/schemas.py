@@ -94,7 +94,7 @@ class PortfolioVersionPublishIn(BaseModel):
     license: str = Field(description="view_only or public_fork_allowed")
     provenance: str = Field(default="simulated")
     consent_acknowledged: bool
-    disclosure_acknowledged: bool = True
+    disclosure_acknowledged: bool
 
 
 class ForkCreateIn(BaseModel):

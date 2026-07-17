@@ -246,6 +246,7 @@ describe("portfolios-api", () => {
       visibility: "public",
       license: "public_fork_allowed",
       consent_acknowledged: true,
+      disclosure_acknowledged: true,
     });
     expect(published.fork_allowed).toBe(true);
     const forked = await forkPortfolioVersion("v1", { name: "My fork" }, { idempotencyKey: "f-key" });

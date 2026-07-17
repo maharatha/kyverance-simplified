@@ -178,6 +178,18 @@ def test_publish_requires_creator_consent_and_blocks_policy_mutation(db_engine, 
     )
     assert no_consent.status_code == 400
 
+    no_disclosure = client.post(
+        f"/api/v1/portfolios/{portfolio_id}/versions/{version_id}/publish",
+        json={
+            "visibility": "public",
+            "license": LICENSE_PUBLIC_FORK_ALLOWED,
+            "provenance": "simulated",
+            "consent_acknowledged": True,
+            "disclosure_acknowledged": False,
+        },
+    )
+    assert no_disclosure.status_code == 400
+
     published = client.post(
         f"/api/v1/portfolios/{portfolio_id}/versions/{version_id}/publish",
         json={
@@ -309,6 +321,48 @@ def test_fork_creates_independent_wallet_and_lineage(db_engine, monkeypatch):
     public_view = client.get(f"/api/v1/portfolio-versions/{version_id}")
     assert public_view.status_code == 200
     assert public_view.json()["fork_allowed"] is True
+
+    # Independence: later source trades must not mutate the fork wallet/positions.
+    fork_before = client.get(f"/api/v1/portfolios/{fork_body['id']}").json()
+    fork_cash_before = fork_before["wallet"]["cash_balance"]
+    source_preview = client.post(
+        f"/api/v1/portfolios/{source_id}/orders/preview",
+        json={"symbol": "MSFT", "side": "sell", "quantity": "1"},
+    )
+    assert source_preview.status_code == 200
+    assert (
+        client.post(
+            f"/api/v1/portfolios/{source_id}/orders/confirm",
+            json={"preview_id": source_preview.json()["preview_id"]},
+            headers={"Idempotency-Key": "sell-msft-after-fork"},
+        ).status_code
+        == 200
+    )
+    fork_after = client.get(f"/api/v1/portfolios/{fork_body['id']}").json()
+    assert fork_after["wallet"]["cash_balance"] == fork_cash_before
+    assert fork_after["wallet"]["id"] == fork_before["wallet"]["id"]
+    db = SessionLocal()
+    fork_msft_qty = (
+        db.query(SimPosition)
+        .filter(
+            SimPosition.portfolio_id == UUID(fork_body["id"]),
+            SimPosition.symbol == "MSFT",
+        )
+        .one()
+        .quantity
+    )
+    source_msft_qty = (
+        db.query(SimPosition)
+        .filter(
+            SimPosition.portfolio_id == UUID(source_id),
+            SimPosition.symbol == "MSFT",
+        )
+        .one()
+        .quantity
+    )
+    assert money(fork_msft_qty) == money("2")
+    assert money(source_msft_qty) == money("1")
+    db.close()
 
     application.dependency_overrides.clear()
     refresh_settings()
