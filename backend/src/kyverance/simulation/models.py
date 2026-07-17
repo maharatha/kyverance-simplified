@@ -251,8 +251,9 @@ class SimPositionLot(Base):
     quantity_remaining: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
     unit_cost: Mapped[Decimal] = mapped_column(Numeric(19, 4), nullable=False)
     opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    execution_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("sim_executions.id", ondelete="RESTRICT"), nullable=False
+    # Nullable for FORK-01 seed lots that have no simulated execution.
+    execution_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("sim_executions.id", ondelete="RESTRICT"), nullable=True
     )
 
 

@@ -10,6 +10,7 @@ import {
   type PortfolioList,
   type PortfolioSummary,
 } from "@/lib/portfolios-api";
+import { ForkFromVersionPanel } from "./ForkFromVersionPanel";
 import "./portfolios.css";
 
 type PortfoliosWorkspaceProps = {
@@ -144,6 +145,10 @@ export function PortfoliosWorkspace({ initialError = null }: PortfoliosWorkspace
         </section>
       ) : null}
 
+      {authStatus === "authenticated" && !session?.error ? (
+        <ForkFromVersionPanel accessToken={accessToken} />
+      ) : null}
+
       {data ? (
         <section className="portfolio-panel" aria-label="Your portfolios">
           <p className="portfolio-meta">
@@ -169,6 +174,7 @@ export function PortfoliosWorkspace({ initialError = null }: PortfoliosWorkspace
                   ) : null}
                   <p className="portfolio-meta">
                     {portfolio.visibility} · {portfolio.provenance}
+                    {portfolio.fork_lineage ? " · forked" : ""}
                   </p>
                 </li>
               ))}

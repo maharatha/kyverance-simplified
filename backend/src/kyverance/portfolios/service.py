@@ -15,12 +15,14 @@ from kyverance.auth.models import AuthenticatedSubject
 from kyverance.portfolios.authorize import get_owned_portfolio, require_user_id
 from kyverance.portfolios.models import Portfolio
 from kyverance.portfolios.schemas import (
+    ForkLineageOut,
     LedgerEntryOut,
     PortfolioDetailOut,
     PortfolioListOut,
     PortfolioSummaryOut,
     WalletOut,
 )
+from kyverance.portfolios.constants import AUDIT_PORTFOLIO_PATCH
 from kyverance.simulation.constants import (
     AUDIT_LEDGER_APPEND,
     AUDIT_PORTFOLIO_CREATE,
@@ -63,10 +65,25 @@ def _ledger_out(entry: WalletLedgerEntry) -> LedgerEntryOut:
 def _summary_out(portfolio: Portfolio) -> PortfolioSummaryOut:
     wallet = portfolio.wallet
     cash = money_str(wallet.balance) if wallet is not None else money_str("0")
+    lineage = None
+    if portfolio.fork_lineage is not None:
+        fork = portfolio.fork_lineage
+        lineage = ForkLineageOut(
+            id=str(fork.id),
+            source_portfolio_id=str(fork.source_portfolio_id),
+            source_version_id=str(fork.source_version_id),
+            license=fork.license,
+            entitlement=fork.entitlement,
+            sync_enabled=bool(fork.sync_enabled),
+            mirror_trades=bool(fork.mirror_trades),
+            forked_at=fork.forked_at,
+        )
     return PortfolioSummaryOut(
         id=str(portfolio.id),
         name=portfolio.name,
         description=portfolio.description,
+        thesis=portfolio.thesis,
+        agent_config_ref=portfolio.agent_config_ref,
         visibility=portfolio.visibility,
         provenance=portfolio.provenance,
         status=portfolio.status,
@@ -74,6 +91,7 @@ def _summary_out(portfolio: Portfolio) -> PortfolioSummaryOut:
         cash_balance=cash,
         created_at=portfolio.created_at,
         updated_at=portfolio.updated_at,
+        fork_lineage=lineage,
     )
 
 
@@ -171,6 +189,8 @@ def create_portfolio(
     *,
     name: str,
     description: str | None = None,
+    thesis: str | None = None,
+    agent_config_ref: str | None = None,
     idempotency_key: str | None = None,
 ) -> PortfolioDetailOut:
     user_id = require_user_id(subject)
@@ -178,6 +198,10 @@ def create_portfolio(
     if not cleaned_name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Portfolio name is required")
     cleaned_description = description.strip() if description and description.strip() else None
+    cleaned_thesis = thesis.strip() if thesis and thesis.strip() else None
+    cleaned_agent_ref = (
+        agent_config_ref.strip() if agent_config_ref and agent_config_ref.strip() else None
+    )
     cleaned_key = idempotency_key.strip() if idempotency_key and idempotency_key.strip() else None
 
     if cleaned_key:
@@ -196,6 +220,8 @@ def create_portfolio(
         owner_user_id=user_id,
         name=cleaned_name,
         description=cleaned_description,
+        thesis=cleaned_thesis,
+        agent_config_ref=cleaned_agent_ref,
         visibility=PORTFOLIO_VISIBILITY_PRIVATE,
         provenance=PORTFOLIO_PROVENANCE_SIMULATED,
         status=PORTFOLIO_STATUS_ACTIVE,
@@ -258,6 +284,52 @@ def create_portfolio(
             "initial_allocation": money_str(INITIAL_ALLOCATION_AMOUNT),
             "idempotency_key": cleaned_key,
         },
+    )
+    db.commit()
+    db.refresh(portfolio)
+    return _detail_out(portfolio)
+
+
+def patch_portfolio(
+    db: Session,
+    subject: AuthenticatedSubject,
+    portfolio_id: uuid.UUID,
+    *,
+    name: str | None = None,
+    description: str | None = None,
+    thesis: str | None = None,
+    agent_config_ref: str | None = None,
+) -> PortfolioDetailOut:
+    portfolio = get_owned_portfolio(db, subject, portfolio_id)
+    changed: dict[str, str | None] = {}
+    if name is not None:
+        cleaned = name.strip()
+        if not cleaned:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Portfolio name is required")
+        portfolio.name = cleaned
+        changed["name"] = cleaned
+    if description is not None:
+        portfolio.description = description.strip() if description.strip() else None
+        changed["description"] = portfolio.description
+    if thesis is not None:
+        portfolio.thesis = thesis.strip() if thesis.strip() else None
+        changed["thesis"] = portfolio.thesis
+    if agent_config_ref is not None:
+        portfolio.agent_config_ref = (
+            agent_config_ref.strip() if agent_config_ref.strip() else None
+        )
+        changed["agent_config_ref"] = portfolio.agent_config_ref
+
+    if not changed:
+        return _detail_out(portfolio)
+
+    record_audit_event(
+        db,
+        actor_subject=subject.subject,
+        action=AUDIT_PORTFOLIO_PATCH,
+        resource_type="portfolio",
+        resource_id=str(portfolio.id),
+        metadata=changed,
     )
     db.commit()
     db.refresh(portfolio)

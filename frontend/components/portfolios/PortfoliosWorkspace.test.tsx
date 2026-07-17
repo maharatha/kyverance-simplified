@@ -9,12 +9,17 @@ vi.mock("next-auth/react", () => ({
   }),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 vi.mock("@/lib/portfolios-api", () => ({
   fetchPortfolios: vi.fn(async () => ({
     empty_state: "empty",
     portfolios: [],
   })),
   createPortfolio: vi.fn(),
+  forkPortfolioVersion: vi.fn(),
 }));
 
 describe("PortfoliosWorkspace", () => {
@@ -31,5 +36,6 @@ describe("PortfoliosWorkspace", () => {
       screen.getByText(/No portfolios yet/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Create portfolio/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Fork a public version/i })).toBeInTheDocument();
   });
 });

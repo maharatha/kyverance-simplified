@@ -7,6 +7,7 @@ import { formatMoney, formatTimestamp } from "@/lib/home/format";
 import { fetchPortfolio, type PortfolioDetail } from "@/lib/portfolios-api";
 import { fetchActivity, fetchPositions, type ActivityItem, type Position } from "@/lib/orders-api";
 import { OrderLoopPanel } from "./OrderLoopPanel";
+import { VersionPublishPanel } from "./VersionPublishPanel";
 import "./portfolios.css";
 
 type PortfolioDetailClientProps = {
@@ -84,7 +85,15 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
         <>
           <h1 className="portfolio-title">{data.name}</h1>
           {data.description ? <p className="portfolio-lede">{data.description}</p> : null}
+          {data.thesis ? <p className="portfolio-lede">{data.thesis}</p> : null}
           <p className="portfolio-notice">{data.simulation_notice}</p>
+          {data.fork_lineage ? (
+            <p className="portfolio-meta" role="note">
+              Forked from version {data.fork_lineage.source_version_id.slice(0, 8)}… · license{" "}
+              {data.fork_lineage.license} · sync {data.fork_lineage.sync_enabled ? "on" : "off"} ·
+              mirror trades {data.fork_lineage.mirror_trades ? "on" : "off"}
+            </p>
+          ) : null}
 
           <section className="portfolio-panel" aria-label="Wallet">
             <h2 className="portfolio-title" style={{ fontSize: "1.25rem" }}>
@@ -102,6 +111,13 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
               {data.visibility} · {data.provenance} · {data.status}
             </p>
           </section>
+
+          <VersionPublishPanel
+            portfolioId={portfolioId}
+            portfolio={data}
+            accessToken={accessToken}
+            onUpdated={load}
+          />
 
           <OrderLoopPanel
             portfolioId={portfolioId}
