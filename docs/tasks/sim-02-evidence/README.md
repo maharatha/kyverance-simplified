@@ -27,6 +27,8 @@ npm run build:clean → compiled successfully; /portfolios/[id] 3.51 kB
 
 Artifact: `sim-02a-runtime-smoke.txt`
 
+Re-verified on acceptance port `http://127.0.0.1:3001` after stopping concurrent Next processes and running an exclusive `build:clean` (shared `.next` MODULE_NOT_FOUND / pack ENOENT otherwise returns intermittent **500**).
+
 - `GET /` → **200**
 - `GET /portfolios` → **200**
 - `GET /portfolios/{id}` → **200**

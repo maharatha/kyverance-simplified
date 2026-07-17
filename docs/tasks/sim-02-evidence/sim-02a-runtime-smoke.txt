@@ -1,6 +1,6 @@
 SIM-02A no-config / fixture-quote runtime smoke
-Timestamp: 2026-07-16T22:26:16.8503737-05:00
-Frontend: http://127.0.0.1:3040 (next start after build:clean)
+Timestamp: 2026-07-16T23:00:25-05:00
+Frontend: http://127.0.0.1:3001 (next start after exclusive build:clean)
 API: http://127.0.0.1:8011 (APP_ENV=local DEV_AUTH=true QUOTE_MODE=fixture, no Plaid)
 
 GET / -> 200
@@ -8,7 +8,7 @@ GET /portfolios -> 200
 GET /portfolios/new -> 200
 GET /api/auth/session -> 200
 GET /health -> 200
-POST /portfolios -> 200 id=0e982295-d62d-4b40-aee8-466cb4851204
+POST /portfolios -> 201 id=70a0a983-95c5-4220-98ab-b060e7dfa1ba
 GET /positions -> 200
 GET /activity -> 200
 POST /orders/preview -> 200 data_mode=fixture freshness=fresh policy=market_us_equity_simulated

@@ -16,6 +16,15 @@ describe("edge middleware route gate", () => {
     expect(signIn.status).toBe(200);
   });
 
+  it("allows Home and /portfolios without a session cookie (SIM-02A runtime)", async () => {
+    const home = middleware(requestFor("/"));
+    const portfolios = middleware(requestFor("/portfolios"));
+    const portfoliosNew = middleware(requestFor("/portfolios/new"));
+    expect(home.status).toBe(200);
+    expect(portfolios.status).toBe(200);
+    expect(portfoliosNew.status).toBe(200);
+  });
+
   it("redirects protected routes to sign-in when unsigned", async () => {
     const response = middleware(requestFor("/profile"));
     expect(response.status).toBe(307);
