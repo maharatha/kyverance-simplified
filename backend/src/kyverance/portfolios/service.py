@@ -112,6 +112,7 @@ def append_ledger(
     reason: str | None = None,
     funding_bucket: str = FUNDING_BUCKET_COMPLIMENTARY,
     audit_actor: str | None = None,
+    related_order_id: uuid.UUID | None = None,
 ) -> WalletLedgerEntry:
     """Append an immutable ledger entry and update wallet projections in the same unit of work."""
     amount = money(amount)
@@ -138,6 +139,7 @@ def append_ledger(
         idempotency_key=idempotency_key,
         reason=reason,
         actor=actor,
+        related_order_id=related_order_id,
     )
     db.add(entry)
     wallet.balance = money(wallet.balance) + amount

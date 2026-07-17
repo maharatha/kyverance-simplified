@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # Local/test falls back to a deterministic non-production material when empty.
     plaid_token_encryption_key: str = ""
 
+    # Quote source for simulation. Fixture mode is the only supported mode in SIM-02.
+    quote_mode: str = "fixture"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

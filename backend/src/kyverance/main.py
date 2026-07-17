@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from kyverance.api.routes import connectors, health, me, portfolios
+from kyverance.api.routes import connectors, health, me, orders, portfolios
 from kyverance.config import get_settings
 
 # Ensure identity/audit/connector/portfolio metadata is registered for Alembic and create_all.
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(me.router, prefix="/api/v1")
     app.include_router(connectors.router, prefix="/api/v1")
     app.include_router(portfolios.router, prefix="/api/v1")
+    app.include_router(orders.router, prefix="/api/v1")
     return app
 
 

@@ -129,3 +129,52 @@
   margin-top: 1.5rem;
   color: var(--muted);
 }
+
+.order-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.order-field {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.order-field input,
+.order-field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  font: inherit;
+}
+
+.order-preview-btn,
+.order-confirm-btn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.order-confirm-btn {
+  margin-top: 0.85rem;
+  border-color: var(--accent);
+}
+
+.order-preview,
+.order-receipt {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}

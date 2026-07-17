@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { formatMoney, formatTimestamp } from "@/lib/home/format";
 import { fetchPortfolio, type PortfolioDetail } from "@/lib/portfolios-api";
+import { fetchActivity, fetchPositions, type ActivityItem, type Position } from "@/lib/orders-api";
+import { OrderLoopPanel } from "./OrderLoopPanel";
 import "./portfolios.css";
 
 type PortfolioDetailClientProps = {
@@ -15,6 +17,8 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
   const { data: session, status: authStatus } = useSession();
   const accessToken = session?.accessToken ?? null;
   const [data, setData] = useState<PortfolioDetail | null>(null);
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,11 +26,19 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
     setLoading(true);
     setError(null);
     try {
-      const detail = await fetchPortfolio(portfolioId, { accessToken });
+      const [detail, pos, act] = await Promise.all([
+        fetchPortfolio(portfolioId, { accessToken }),
+        fetchPositions(portfolioId, { accessToken }),
+        fetchActivity(portfolioId, { accessToken }),
+      ]);
       setData(detail);
+      setPositions(pos.positions);
+      setActivity(act.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load portfolio");
       setData(null);
+      setPositions([]);
+      setActivity([]);
     } finally {
       setLoading(false);
     }
@@ -83,6 +95,15 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
               {data.visibility} · {data.provenance} · {data.status}
             </p>
           </section>
+
+          <OrderLoopPanel
+            portfolioId={portfolioId}
+            currencyCode={data.wallet.currency_code}
+            accessToken={accessToken}
+            positions={positions}
+            activity={activity}
+            onMutated={load}
+          />
 
           <section className="portfolio-panel" aria-label="Ledger">
             <h2 className="portfolio-title" style={{ fontSize: "1.25rem" }}>
