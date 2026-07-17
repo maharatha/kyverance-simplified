@@ -26,14 +26,21 @@ export function PortfolioDetailClient({ portfolioId }: PortfolioDetailClientProp
     setLoading(true);
     setError(null);
     try {
-      const [detail, pos, act] = await Promise.all([
-        fetchPortfolio(portfolioId, { accessToken }),
-        fetchPositions(portfolioId, { accessToken }),
-        fetchActivity(portfolioId, { accessToken }),
-      ]);
+      // Portfolio + wallet/ledger are required. Positions/activity are soft-fail so a
+      // stale API or unmigrated order tables cannot blank the whole workspace.
+      const detail = await fetchPortfolio(portfolioId, { accessToken });
       setData(detail);
-      setPositions(pos.positions);
-      setActivity(act.items);
+      try {
+        const [pos, act] = await Promise.all([
+          fetchPositions(portfolioId, { accessToken }),
+          fetchActivity(portfolioId, { accessToken }),
+        ]);
+        setPositions(pos.positions);
+        setActivity(act.items);
+      } catch {
+        setPositions([]);
+        setActivity([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load portfolio");
       setData(null);

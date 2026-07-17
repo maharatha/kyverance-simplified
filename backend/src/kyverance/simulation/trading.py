@@ -10,7 +10,7 @@ from decimal import Decimal
 from typing import Any
 
 from fastapi import HTTPException, status
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from kyverance.audit.service import record_audit_event
@@ -531,13 +531,18 @@ def list_activity(
     portfolio_id: uuid.UUID,
 ) -> ActivityListOut:
     get_owned_portfolio(db, subject, portfolio_id)
-    receipts = (
-        db.query(OrderReceipt)
-        .filter(OrderReceipt.portfolio_id == portfolio_id)
-        .order_by(OrderReceipt.created_at.desc())
-        .limit(100)
-        .all()
-    )
+    try:
+        receipts = (
+            db.query(OrderReceipt)
+            .filter(OrderReceipt.portfolio_id == portfolio_id)
+            .order_by(OrderReceipt.created_at.desc())
+            .limit(100)
+            .all()
+        )
+    except SQLAlchemyError:
+        # Unmigrated / missing order tables must not 500 the portfolio workspace.
+        db.rollback()
+        return ActivityListOut(items=[])
     items: list[ActivityItemOut] = []
     for receipt in receipts:
         payload = receipt.payload_json or {}
@@ -563,7 +568,12 @@ def get_positions(
     portfolio_id: uuid.UUID,
 ) -> PositionsListOut:
     get_owned_portfolio(db, subject, portfolio_id)
-    rows = list_positions(db, portfolio_id)
+    try:
+        rows = list_positions(db, portfolio_id)
+    except SQLAlchemyError:
+        # Unmigrated / missing position tables must not 500 the portfolio workspace.
+        db.rollback()
+        return PositionsListOut(positions=[])
     return PositionsListOut(
         positions=[
             PositionOut(

@@ -375,3 +375,58 @@ def test_sell_round_trip_and_decimal_strings(db_engine, monkeypatch):
 
     application.dependency_overrides.clear()
     refresh_settings()
+
+
+def test_positions_and_activity_survive_missing_order_tables(db_engine, monkeypatch):
+    """Portfolio workspace reads must not 500 when SIM-02 tables are unmigrated."""
+    from sqlalchemy import text
+
+    application, client, SessionLocal = _client_for(db_engine, monkeypatch)
+    created = _create_portfolio(client, name="Hardening")
+    pid = created["id"]
+
+    db = SessionLocal()
+    for table in (
+        "order_receipts",
+        "sim_executions",
+        "sim_orders",
+        "order_previews",
+        "sim_position_lots",
+        "sim_positions",
+    ):
+        db.execute(text(f"DROP TABLE IF EXISTS {table}"))
+    db.commit()
+    db.close()
+
+    positions = client.get(f"/api/v1/portfolios/{pid}/positions")
+    assert positions.status_code == 200
+    assert positions.json()["positions"] == []
+
+    activity = client.get(f"/api/v1/portfolios/{pid}/activity")
+    assert activity.status_code == 200
+    assert activity.json()["items"] == []
+
+    # Core portfolio read still works under fixture quote mode defaults.
+    detail = client.get(f"/api/v1/portfolios/{pid}")
+    assert detail.status_code == 200
+    assert detail.json()["id"] == pid
+
+    application.dependency_overrides.clear()
+    refresh_settings()
+
+
+def test_non_fixture_quote_mode_rejected(db_engine, monkeypatch):
+    """Only fixture quote mode is supported; misconfig must fail closed on preview."""
+    application, client, _ = _client_for(db_engine, monkeypatch)
+    monkeypatch.setenv("QUOTE_MODE", "live")
+    refresh_settings()
+    pid = _create_portfolio(client)["id"]
+    preview = client.post(
+        f"/api/v1/portfolios/{pid}/orders/preview",
+        json={"symbol": "AAPL", "side": "buy", "quantity": "1"},
+    )
+    assert preview.status_code == 503
+    assert "fixture" in preview.json()["detail"].lower()
+    monkeypatch.setenv("QUOTE_MODE", "fixture")
+    refresh_settings()
+    application.dependency_overrides.clear()
