@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from kyverance.audit.service import record_audit_event
@@ -17,6 +19,7 @@ from kyverance.connectors.constants import (
     CONSENT_PLAID_CONNECT,
     CONSENT_PLAID_DATA_RETENTION,
     PROVIDER_MODE_FAKE,
+    PROVIDER_MODE_UNAVAILABLE,
     PROVENANCE_PLAID_READ_ONLY,
     SOURCE_LABEL_PLAID,
 )
@@ -34,6 +37,8 @@ from kyverance.connectors.schemas import (
 from kyverance.connectors.token_crypto import decrypt_access_token, encrypt_access_token
 from kyverance.identity.models import ConsentRecord, User
 from kyverance.identity.service import record_consent
+
+logger = logging.getLogger(__name__)
 
 
 def _now() -> datetime:
@@ -92,12 +97,12 @@ def _empty_state(
 ) -> str:
     if connections:
         return "populated"
+    if mode == PROVIDER_MODE_UNAVAILABLE or (not plaid_configured and mode != PROVIDER_MODE_FAKE):
+        return "configuration_required"
     if not connect_consent:
         return "consent_required"
     if mode == PROVIDER_MODE_FAKE:
         return "ready_fake"
-    if not plaid_configured:
-        return "configuration_required"
     return "ready"
 
 
@@ -150,14 +155,37 @@ def get_overview(
     resolved = settings or get_settings()
     provider = get_plaid_provider(resolved)
     user_id = _user_uuid(subject)
-    connections = (
-        db.query(PlaidConnection)
-        .filter(PlaidConnection.user_id == user_id)
-        .order_by(PlaidConnection.created_at.desc())
-        .all()
-    )
-    connect_consent = _consent_granted(db, user_id, CONSENT_PLAID_CONNECT)
-    retention_consent = _consent_granted(db, user_id, CONSENT_PLAID_DATA_RETENTION)
+
+    try:
+        connections = (
+            db.query(PlaidConnection)
+            .filter(PlaidConnection.user_id == user_id)
+            .order_by(PlaidConnection.created_at.desc())
+            .all()
+        )
+        connect_consent = _consent_granted(db, user_id, CONSENT_PLAID_CONNECT)
+        retention_consent = _consent_granted(db, user_id, CONSENT_PLAID_DATA_RETENTION)
+    except SQLAlchemyError:
+        # Missing migrations / DB outage must not 500 the Connected Accounts page.
+        logger.exception("Connectors overview query failed; returning configuration unavailable state")
+        try:
+            db.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+        return ConnectorsOverviewOut(
+            configured=False,
+            plaid_configured=resolved.plaid_configured,
+            mode=PROVIDER_MODE_UNAVAILABLE,
+            connect_consent_granted=False,
+            data_retention_consent_granted=False,
+            empty_state="configuration_required",
+            connections=[],
+            message=(
+                "Connected accounts are temporarily unavailable. "
+                "Plaid configuration or database migrations may be incomplete."
+            ),
+        )
+
     empty = _empty_state(
         connections=connections,
         connect_consent=connect_consent,
@@ -166,13 +194,30 @@ def get_overview(
     )
     message = None
     if empty == "configuration_required":
-        message = "Plaid credentials are not configured. Local fake provider is unavailable in this environment."
+        message = (
+            "Plaid credentials are not configured. "
+            "Account linking is unavailable until configuration is provided."
+        )
     elif empty == "ready_fake":
-        message = "Local fake provider is active. No real banking credentials are used."
+        message = (
+            "Plaid credentials are not configured. "
+            "Local fake provider is active for read-only verification only."
+        )
     elif empty == "consent_required":
-        message = "Grant read-only connection consent before linking an account."
+        if not resolved.plaid_configured:
+            message = (
+                "Plaid credentials are not configured. "
+                "Grant read-only connection consent before using the local fake provider."
+            )
+        else:
+            message = "Grant read-only connection consent before linking an account."
     elif empty == "ready":
         message = "Ready to create a Plaid Link token."
+    elif empty == "populated" and not resolved.plaid_configured and provider.mode == PROVIDER_MODE_FAKE:
+        message = (
+            "Plaid credentials are not configured. "
+            "Showing local fake-provider connections only."
+        )
 
     return ConnectorsOverviewOut(
         configured=resolved.plaid_configured or provider.mode == PROVIDER_MODE_FAKE,

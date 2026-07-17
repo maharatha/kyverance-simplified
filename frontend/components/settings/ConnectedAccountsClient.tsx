@@ -19,7 +19,7 @@ type ConnectedAccountsClientProps = {
 };
 
 export function ConnectedAccountsClient({ initialError = null }: ConnectedAccountsClientProps) {
-  const { data: session } = useSession();
+  const { data: session, status: authStatus } = useSession();
   const accessToken = session?.accessToken ?? null;
   const [data, setData] = useState<ConnectorsOverview | null>(null);
   const [error, setError] = useState<string | null>(initialError);
@@ -41,8 +41,19 @@ export function ConnectedAccountsClient({ initialError = null }: ConnectedAccoun
   }, [accessToken]);
 
   useEffect(() => {
+    if (authStatus === "loading") return;
+    if (authStatus !== "authenticated" || session?.error) {
+      setLoading(false);
+      setData(null);
+      setError(
+        authStatus === "unauthenticated"
+          ? "Sign in to view your connections."
+          : "Session expired. Sign in again to view your connections.",
+      );
+      return;
+    }
     void load();
-  }, [load]);
+  }, [authStatus, session?.error, load]);
 
   async function run(action: string, fn: () => Promise<ConnectorsOverview | { status: string }>) {
     setBusy(action);
@@ -83,11 +94,25 @@ export function ConnectedAccountsClient({ initialError = null }: ConnectedAccoun
         <section className="connected-panel" aria-label="Connection overview">
           <p className="connected-meta">
             Mode: <strong>{data.mode}</strong>
-            {data.plaid_configured ? " · Plaid credentials configured" : " · Local fake provider"}
+            {data.plaid_configured
+              ? " · Plaid credentials configured"
+              : data.mode === "fake"
+                ? " · Plaid unset · local fake provider"
+                : " · Plaid unset"}
           </p>
           {data.message ? <p className="connected-message">{data.message}</p> : null}
 
-          {!data.connect_consent_granted ? (
+          {!data.configured || data.empty_state === "configuration_required" ? (
+            <div className="connected-actions" role="status">
+              <h2 className="connected-unavailable-title">Connections unavailable</h2>
+              <p>
+                Account linking isn’t configured yet. Plaid credentials are required for live
+                read-only connections.
+              </p>
+            </div>
+          ) : null}
+
+          {data.configured && !data.connect_consent_granted ? (
             <div className="connected-actions">
               <p>
                 Explicit consent is required before creating a Link token or exchanging a public
@@ -104,7 +129,7 @@ export function ConnectedAccountsClient({ initialError = null }: ConnectedAccoun
             </div>
           ) : null}
 
-          {data.connect_consent_granted && data.connections.length === 0 ? (
+          {data.configured && data.connect_consent_granted && data.connections.length === 0 ? (
             <div className="connected-actions">
               {data.mode === "fake" ? (
                 <>

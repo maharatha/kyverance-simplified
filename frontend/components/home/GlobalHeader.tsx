@@ -45,7 +45,7 @@ export function GlobalHeader({
                 Profile
               </Link>
               <Link
-                href="/settings/connected"
+                href="/settings/connected-accounts"
                 className="btn-ghost"
                 style={{ minHeight: 40, paddingInline: "0.9rem" }}
               >

@@ -38,7 +38,8 @@ const emptyOverview = {
   data_retention_consent_granted: false,
   empty_state: "consent_required",
   connections: [],
-  message: "Grant read-only connection consent before linking an account.",
+  message:
+    "Plaid credentials are not configured. Grant read-only connection consent before using the local fake provider.",
 };
 
 const populatedOverview = {
@@ -98,7 +99,8 @@ describe("ConnectedAccountsClient", () => {
       ...emptyOverview,
       connect_consent_granted: true,
       empty_state: "ready_fake",
-      message: "Local fake provider is active. No real banking credentials are used.",
+      message:
+        "Plaid credentials are not configured. Local fake provider is active for read-only verification only.",
     });
 
     render(<ConnectedAccountsClient />);
@@ -116,7 +118,8 @@ describe("ConnectedAccountsClient", () => {
       ...emptyOverview,
       connect_consent_granted: true,
       empty_state: "ready_fake",
-      message: "Local fake provider is active. No real banking credentials are used.",
+      message:
+        "Plaid credentials are not configured. Local fake provider is active for read-only verification only.",
     });
     fakeConnectPlaid.mockResolvedValue(populatedOverview);
     disconnectConnection.mockResolvedValue({
@@ -151,5 +154,25 @@ describe("ConnectedAccountsClient", () => {
     fetchConnectorsOverview.mockRejectedValue(new Error("Authentication required"));
     render(<ConnectedAccountsClient />);
     expect(await screen.findByRole("alert")).toHaveTextContent(/authentication required/i);
+  });
+
+  it("shows unavailable configuration state when Plaid is not configured", async () => {
+    fetchConnectorsOverview.mockResolvedValue({
+      configured: false,
+      plaid_configured: false,
+      mode: "unavailable",
+      connect_consent_granted: false,
+      data_retention_consent_granted: false,
+      empty_state: "configuration_required",
+      connections: [],
+      message:
+        "Plaid credentials are not configured. Account linking is unavailable until configuration is provided.",
+    });
+
+    render(<ConnectedAccountsClient />);
+
+    expect(await screen.findByRole("heading", { name: /connections unavailable/i })).toBeInTheDocument();
+    expect(screen.getByText(/plaid credentials are not configured/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /grant read-only connect consent/i })).toBeNull();
   });
 });

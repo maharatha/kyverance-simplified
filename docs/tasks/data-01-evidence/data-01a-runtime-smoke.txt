@@ -1,0 +1,14 @@
+DATA-01A no-config runtime smoke
+Timestamp: 2026-07-16T20:34:13.6205783-05:00
+Frontend: http://127.0.0.1:3030 (next dev, no AUTH_SECRET / Entra / Plaid env)
+API: http://127.0.0.1:8010 (APP_ENV=local DEV_AUTH=true, no Plaid credentials)
+
+GET / -> 200
+GET /api/auth/session -> 200 null
+GET /settings/connected-accounts (no cookie) -> 307 location: http://localhost:3030/sign-in?callbackUrl=%2Fsettings%2Fconnected-accounts
+GET /settings/connected-accounts (follow redirects) -> 200
+GET /settings/connected (legacy) -> 307 location: http://localhost:3030/sign-in?callbackUrl=%2Fsettings%2Fconnected
+GET /api/v1/connectors -> 200
+{"configured":true,"plaid_configured":false,"mode":"fake","connect_consent_granted":true,"data_retention_consent_granted":true,"empty_state":"populated","connections":[{"id":"51b8f5b2-6410-40c7-bf01-33e7454e643d","provider_key":"any","institution_name":"Sample Bank (local fake)","status":"disconnected","last_synced_at":"2026-07-17T01:18:02.917879Z","consent_recorded_at":"2026-07-17T01:18:02.758781Z","disconnected_at":"2026-07-17T01:18:03.111806Z","deletion_requested_at":null,"accounts":[{"id":"06066858-bc38-461e-ba83-11fe39d4d0ec","connection_id":"51b8f5b2-6410-40c7-bf01-33e7454e643d","name":"Sample Brokerage","mask":"0000","account_type":"brokerage","currency":"USD","provenance":"plaid_read_only","source_label":"Linked account (read-only)","last_synced_at":"2026-07-17T01:18:02.917879Z","holdings":[{"id":"26d01e0b-c792-473c-abe3-ebfb4c0e8020","symbol":"VOO","name":"Vanguard S&P 500 ETF","quantity":"10.50000000","currency":"USD","provenance":"plaid_read_only","source_label":"Linked account (read-only)"}]},{"id":"c7aafcad-8ee1-4ad6-80ce-0735188acfd2","connection_id":"51b8f5b2-6410-40c7-bf01-33e7454e643d","name":"Sample IRA","mask":"1111","account_type":"ira","currency":"USD","provenance":"plaid_read_only","source_label":"Linked account (read-only)","last_synced_at":"2026-07-17T01:18:02.917879Z","holdings":[{"id":"94bd922d-475a-49bd-8cb4-35258e9e15d4","symbol":"BND","name":"Vanguard Total Bond Market ETF","quantity":"25.00000000","currency":"USD","provenance":"plaid_read_only","source_label":"Linked account (read-only)"}]}]}],"message":"Plaid credentials are not configured. Showing local fake-provider connections only."}
+
+Build includes /settings/connected-accounts (see npm run build:clean output).

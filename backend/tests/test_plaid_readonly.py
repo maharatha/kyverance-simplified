@@ -238,6 +238,60 @@ def test_token_crypto_round_trip(db_session: Session, monkeypatch):
     assert decrypt_access_token(ciphertext, settings) == "access-sandbox-fake-demo"
 
 
+def test_no_plaid_config_returns_configuration_state_outside_local(db_engine, monkeypatch):
+    """Non-local environments without Plaid must return HTTP 200 + configuration_required."""
+    from kyverance.auth.deps import require_authenticated
+    from kyverance.auth.models import AuthenticatedSubject, DEV_SUBJECT
+    from kyverance.identity.service import bootstrap_user_on_sign_in
+    from sqlalchemy.orm import sessionmaker
+
+    application, client, _ = _client_for(db_engine, monkeypatch, app_env="staging", dev_auth="false")
+    SessionLocal = sessionmaker(bind=db_engine, autocommit=False, autoflush=False, class_=Session)
+    db = SessionLocal()
+    user, _roles, _created = bootstrap_user_on_sign_in(db, entra_oid=DEV_SUBJECT.subject)
+    user_id = str(user.id)
+    db.close()
+
+    application.dependency_overrides[require_authenticated] = lambda: AuthenticatedSubject(
+        subject=DEV_SUBJECT.subject,
+        user_id=user_id,
+        display_name="Dev User",
+        is_dev=False,
+        roles=frozenset({"member"}),
+    )
+    response = client.get("/api/v1/connectors")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["plaid_configured"] is False
+    assert body["configured"] is False
+    assert body["mode"] == "unavailable"
+    assert body["empty_state"] == "configuration_required"
+    assert "not configured" in (body["message"] or "").lower()
+    application.dependency_overrides.clear()
+    refresh_settings()
+
+
+def test_overview_survives_missing_plaid_tables(db_engine, monkeypatch):
+    """Overview must not 500 when connector tables are missing (unmigrated DB)."""
+    from sqlalchemy import text
+
+    application, client, SessionLocal = _client_for(db_engine, monkeypatch)
+    db = SessionLocal()
+    for table in ("plaid_holdings", "plaid_accounts", "plaid_deletion_requests", "plaid_connections"):
+        db.execute(text(f"DROP TABLE IF EXISTS {table}"))
+    db.commit()
+    db.close()
+
+    response = client.get("/api/v1/connectors")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["empty_state"] == "configuration_required"
+    assert body["connections"] == []
+    assert body["message"]
+    application.dependency_overrides.clear()
+    refresh_settings()
+
+
 def test_link_token_then_manual_exchange(db_engine, monkeypatch):
     application, client, _ = _client_for(db_engine, monkeypatch)
     client.post("/api/v1/connectors/plaid/consent", json={"granted": True})

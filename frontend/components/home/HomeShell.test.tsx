@@ -38,7 +38,10 @@ describe("HomeShell states", () => {
   it("prefers real session state over fixture for the header", () => {
     render(<HomeShell fixture={getHomeFixture("signed-out")} sessionSignedIn />);
     expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Accounts" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Accounts" })).toHaveAttribute(
+      "href",
+      "/settings/connected-accounts",
+    );
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
   });
 
