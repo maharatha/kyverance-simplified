@@ -44,6 +44,13 @@ export function GlobalHeader({
               >
                 Profile
               </Link>
+              <Link
+                href="/settings/connected"
+                className="btn-ghost"
+                style={{ minHeight: 40, paddingInline: "0.9rem" }}
+              >
+                Accounts
+              </Link>
               {onSignOut ? (
                 <button
                   type="button"

@@ -31,6 +31,15 @@ class Settings(BaseSettings):
 
     key_vault_url: str = ""
 
+    # Plaid — leave unset for local fake-provider mode (no live banking).
+    plaid_client_id: str = ""
+    plaid_secret: str = ""
+    plaid_sandbox_secret: str = ""
+    plaid_env: str = "sandbox"
+    # Fernet key or arbitrary local secret used to seal access tokens at rest.
+    # Local/test falls back to a deterministic non-production material when empty.
+    plaid_token_encryption_key: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -38,6 +47,17 @@ class Settings(BaseSettings):
     @property
     def is_local_or_test(self) -> bool:
         return self.app_env.strip().lower() in {"local", "test"}
+
+    @property
+    def plaid_api_secret(self) -> str:
+        env = (self.plaid_env or "sandbox").strip().lower()
+        if env in {"sandbox", "development", "dev"}:
+            return self.plaid_sandbox_secret or self.plaid_secret
+        return self.plaid_secret or self.plaid_sandbox_secret
+
+    @property
+    def plaid_configured(self) -> bool:
+        return bool(self.plaid_client_id.strip() and self.plaid_api_secret.strip())
 
     @property
     def development_identity_enabled(self) -> bool:

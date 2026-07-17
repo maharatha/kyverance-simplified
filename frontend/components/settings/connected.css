@@ -1,0 +1,122 @@
+.connected-page {
+  min-height: 100vh;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 3rem clamp(1rem, 3vw, 2rem) 4rem;
+}
+
+.connected-eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.connected-title {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  letter-spacing: -0.03em;
+}
+
+.connected-lede {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.connected-panel {
+  margin-top: 1.75rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.connected-meta,
+.connected-message,
+.connected-status,
+.connected-source {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.connected-error {
+  margin-top: 1rem;
+  color: var(--loss);
+}
+
+.connected-actions {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.connected-list {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.connected-item {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.connected-item-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.connected-item-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.connected-badge {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: lowercase;
+}
+
+.connected-accounts,
+.connected-holdings {
+  margin: 0.65rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--fg);
+  line-height: 1.5;
+}
+
+.connected-holdings {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.connected-item-actions {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.connected-footer {
+  margin-top: 2rem;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
