@@ -60,6 +60,19 @@ class Settings(BaseSettings):
     market_data_worker_max_jobs: int = 50
     market_data_job_lock_seconds: int = 1800
 
+    # Canonical research jobs (RSRCH-01). AI off / deterministic by default.
+    research_engine_enabled: bool = True
+    research_jobs_enabled: bool = True
+    research_ai_enabled: bool = False
+    research_data_mode: str = "internal"
+    research_artifact_backend: str = "local"
+    research_artifact_root: str = ""
+    research_eod_finalize_lag_minutes: int = 90
+    research_generation_lock_ttl_seconds: int = 300
+    research_worker_mode: str = "once"
+    research_worker_max_jobs: int = 50
+    research_job_lock_seconds: int = 1800
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

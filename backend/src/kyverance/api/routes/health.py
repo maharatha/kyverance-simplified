@@ -78,6 +78,20 @@ def ready(
     except Exception as exc:  # noqa: BLE001
         checks["market_data_ingestion"] = f"error:{exc.__class__.__name__}"
 
+    checks["research_engine"] = "enabled" if settings.research_engine_enabled else "disabled"
+    checks["research_jobs"] = "enabled" if settings.research_jobs_enabled else "disabled"
+    checks["research_ai"] = "enabled" if settings.research_ai_enabled else "disabled"
+    try:
+        from kyverance.research.models import ResearchHealth, SecurityResearchLatest
+
+        checks["research_latest_pointers"] = db.query(SecurityResearchLatest).count()
+        for component in ("scheduler", "worker"):
+            health = db.get(ResearchHealth, component)
+            if health and health.last_success_at:
+                checks[f"research_{component}_last_success"] = health.last_success_at.isoformat()
+    except Exception as exc:  # noqa: BLE001
+        checks["research_status"] = f"error:{exc.__class__.__name__}"
+
     # Provider/AI outages must not fail readiness when Postgres is healthy.
     ok = checks.get("database") == "ok"
     return {"status": "ok" if ok else "degraded", "checks": checks}

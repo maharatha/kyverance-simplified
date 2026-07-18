@@ -15,6 +15,7 @@ import kyverance.connectors.models  # noqa: F401, E402
 import kyverance.identity.models  # noqa: F401, E402
 import kyverance.market_data.models  # noqa: F401, E402
 import kyverance.portfolios.models  # noqa: F401, E402
+import kyverance.research.models  # noqa: F401, E402
 import kyverance.simulation.models  # noqa: F401, E402
 
 config = context.config

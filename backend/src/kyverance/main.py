@@ -4,16 +4,17 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from kyverance.api.routes import agents, connectors, health, market_data, me, orders, portfolios
+from kyverance.api.routes import agents, connectors, health, market_data, me, orders, portfolios, research
 from kyverance.config import get_settings
 
-# Ensure identity/audit/connector/portfolio/agent/market metadata is registered for Alembic and create_all.
+# Ensure identity/audit/connector/portfolio/agent/market/research metadata is registered for Alembic and create_all.
 import kyverance.agents.models  # noqa: F401
 import kyverance.audit.models  # noqa: F401
 import kyverance.connectors.models  # noqa: F401
 import kyverance.identity.models  # noqa: F401
 import kyverance.market_data.models  # noqa: F401
 import kyverance.portfolios.models  # noqa: F401
+import kyverance.research.models  # noqa: F401
 import kyverance.simulation.models  # noqa: F401
 
 
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(agents.router, prefix="/api/v1")
     app.include_router(agents.proposals_router, prefix="/api/v1")
     app.include_router(market_data.router, prefix="/api/v1")
+    app.include_router(research.router, prefix="/api/v1")
     return app
 
 

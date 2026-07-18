@@ -521,6 +521,28 @@ def create_facts_packet(
             ),
         }
 
+    # Attach published canonical research refs only (never private/Plaid; never unpublished).
+    try:
+        from kyverance.research.service import get_published_research_ref
+
+        for holding in holdings:
+            sym = str(holding.get("symbol") or "").strip()
+            if not sym:
+                continue
+            research_ref = get_published_research_ref(db, sym)
+            if research_ref is None:
+                continue
+            evidence_refs.append(
+                {
+                    "kind": research_ref["kind"],
+                    "ref": research_ref["ref"],
+                    "label": research_ref["label"],
+                }
+            )
+    except Exception:
+        # Research module unavailable must not block owner-authorized facts.
+        pass
+
     payload = _build_facts_payload(
         portfolio_id=portfolio_id,
         portfolio_version_id=version.id if version else None,
